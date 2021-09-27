@@ -1,0 +1,22 @@
+DECLARE 
+		tbl CURSOR FOR Select a.productionid pid, b.productiondetailno pnum, (SELECT c.pdesc FROM product c WHERE c.prodno = b.prodno AND userid = val) pname, b.qty rem, b.qty total, a.dateofentry date
+		FROM production as a INNER JOIN productiondetails as b ON a.productionid = b.productionid 
+		WHERE a.userid = val;
+		rec RECORD;
+BEGIN
+	DELETE FROM tempdelivery;
+	OPEN tbl;
+   
+	LOOP
+	-- fetch row into the film
+		FETCH tbl INTO rec;
+		-- exit when no more row to fetch
+		EXIT WHEN NOT FOUND;
+
+		INSERT INTO tempdelivery VALUES(rec.pid, rec.pname, rec.rem, rec.total, rec.date, rec.pnum);		
+	END LOOP;
+
+	-- Close the cursor
+	CLOSE tbl;
+RETURN QUERY SELECT tempdelivery.productionid AS productionid, tempdelivery.pdnum AS pdetail, tempdelivery.pdesc AS pdesc, tempdelivery.remain AS remain, tempdelivery.total AS total, tempdelivery.date AS dateentry FROM tempdelivery;
+END; 
